@@ -1,0 +1,100 @@
+
+syntax = "proto3";
+
+package quickshard.common.v1;
+
+import "validate/validate.proto";
+
+// TransactionLogEvent represents a single log entry from a blockchain transaction.
+// This structure is designed to be compatible with standard Ethereum log events.
+message TransactionLogEvent {
+  // The identifier of the blockchain.
+  string chain_id = 1 [
+    json_name = "chainId",
+    (validate.rules).string.min_len = 1
+  ];
+
+  // The block number where this log was included. Must be a non-zero value.
+  uint64 block_number = 2 [
+    json_name = "blockNumber",
+    (validate.rules).uint64.gt = 0
+  ];
+
+  // The hash of the transaction that generated this log.
+  string transaction_id = 3 [
+    json_name = "transactionId",
+    (validate.rules).string.min_len = 1
+  ];
+
+  // The index of the transaction within the block.
+  // No validation rule, as 0 is a valid index.
+  uint32 transaction_index = 4 [json_name = "transactionIndex"];
+
+  // The index of this log within the transaction's logs.
+  // No validation rule, as 0 is a valid index.
+  uint32 log_index = 5 [json_name = "logIndex"];
+
+  // The address of the contract that emitted the log.
+  string address = 6 [
+    json_name = "address",
+    (validate.rules).string.min_len = 1
+  ];
+
+  // The unindexed data of the log. This can be empty.
+  bytes data = 7 [json_name = "data"];
+
+  // The list of indexed topics for the log. The list can be empty,
+  // but if any topics are present, they cannot be empty strings.
+  repeated string topics = 8 [
+    json_name = "topics",
+    (validate.rules).repeated.items.string.min_len = 1
+  ];
+}
+
+// Swap represents a token swap event from a decentralized exchange.
+message Swap {
+  // The identifier of the blockchain where the swap occurred.
+  string chain_id = 1 [
+    json_name = "chainId",
+    (validate.rules).string.min_len = 1
+  ];
+  // The hash of the transaction that included this swap.
+  string transaction_id = 2 [
+    json_name = "transactionId",
+    (validate.rules).string.min_len = 1
+  ];
+  // The address of the liquidity pool where the swap occurred.
+  string pool = 3 [
+    json_name = "pool",
+    (validate.rules).string.min_len = 1
+  ];
+  // The address of the input token.
+  string token_in = 4 [
+    json_name = "tokenIn",
+    (validate.rules).string.min_len = 1
+  ];
+  // The address of the output token.
+  string token_out = 5 [
+    json_name = "tokenOut",
+    (validate.rules).string.min_len = 1
+  ];
+  // The amount of the input token, as a string to preserve uint256 precision.
+  string amount_in = 6 [
+    json_name = "amountIn",
+    (validate.rules).string.min_len = 1
+  ];
+  // The amount of the output token, as a string to preserve uint256 precision.
+  string amount_out = 7 [
+    json_name = "amountOut",
+    (validate.rules).string.min_len = 1
+  ];
+  // The address that initiated the swap. This field is optional.
+  string sender = 8 [json_name = "sender"];
+  // The address that received the output tokens. This field is optional.
+  string receiver = 9 [json_name = "receiver"];
+  // The name of the protocol where the swap occurred (e.g., "Uniswap V2", "Sushiswap").
+  string protocol = 10 [
+    json_name = "protocol",
+    (validate.rules).string.min_len = 1
+  ];
+}

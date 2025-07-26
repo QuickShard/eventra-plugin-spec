@@ -5,35 +5,59 @@ package quickshard.eventrapluginspec.v1;
 option go_package = "github.com/quickshard/eventra-plugin-spec/gen/go/v1";
 
 import "google/protobuf/any.proto";
+import "validate/validate.proto";
+
 // PluginSpec is the complete, language-agnostic definition for a plugin.
 // It includes JSON name annotations and full documentation comments, serving as
 // the single source of truth for the plugin contract.
 message PluginSpec {
-  // id is the unique identifier for the plugin.
-  string id = 1 [json_name = "id"];
   // name is the human-readable display name of the plugin.
-  string name = 2 [json_name = "name"];
+  string name = 1 [
+    json_name = "name",
+    (validate.rules).string = {min_len: 1, max_len: 16}
+  ];
   // description provides a brief explanation of what the plugin does.
-  string description = 3 [json_name = "description"];
+  string description = 2 [
+    json_name = "description",
+    (validate.rules).string = {min_len: 1, max_len: 64}
+  ];
   // category helps organize plugins in the UI (e.g., "Crypto", "Logic", "Webhook").
-  string category = 4 [json_name = "category"];
-  // icon_type gives a hint to the UI about which icon to display (e.g., "signer", "note").
-  string icon_type = 5 [json_name = "iconType"];
-
-  // cost represents the computational units consumed by one execution of the plugin.
-  uint64 cost = 6 [json_name = "cost"];
-
-  // entry indicates if this plugin can be a starting point for a workflow (i.e., a trigger).
-  bool entry = 7 [json_name = "entry"];
+  string category = 3 [
+    json_name = "category",
+    (validate.rules).string = {min_len: 1, max_len: 16}
+  ];
 
   // A list that holds default instances of the input Protobuf messages.
-  // The order of this list is critical and defines the contract for the
-  // data passed to the plugin's Call function.
-  repeated google.protobuf.Any inputs = 8 [json_name = "inputs"];
+  repeated google.protobuf.Any inputs = 4 [json_name = "inputs"];
 
   // A single, default instance of the output Protobuf message.
-  google.protobuf.Any output = 9 [json_name = "output"];
+  google.protobuf.Any output = 5 [json_name = "output"];
 
   // Configuration for the plugin, provided as a simple key-value map.
-  map<string, string> config = 10 [json_name = "config"];
+  map<string, ConfigValue> config = 6 [
+    json_name = "config",
+    (validate.rules).map = {
+      keys: {string: {min_len: 1, max_len: 64}},
+      values: {message: {required: true}}
+    }
+  ];
+}
+
+// ConfigValue defines the properties for a single configuration item, allowing
+// the UI to dynamically build input forms.
+message ConfigValue {
+  // A human-readable name.
+  string name = 1 [(validate.rules).string = {min_len: 1, max_len: 24}];
+  // A human-readable description explaining what this value is for.
+  string description = 2 [(validate.rules).string = {min_len: 1, max_len: 64}];
+  // A default or static value. Can be left empty.
+  string value = 3 [(validate.rules).string.max_len = 1024];
+  // If true, the value must be provided for the plugin to function correctly.
+  bool required = 4;
+  // If true, the system will attempt to load the value from an environment variable.
+  bool from_env = 5;
+  // A list of predefined, allowed values for this configuration item.
+  repeated string allowed_values = 6 [
+    (validate.rules).repeated.items.string = {min_len: 1, max_len: 64}
+  ];
 }
