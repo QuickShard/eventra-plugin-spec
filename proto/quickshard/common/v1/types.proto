@@ -3,6 +3,8 @@ syntax = "proto3";
 
 package quickshard.common.v1;
 
+option go_package = "github.com/quickshard/eventra-plugin-spec/gen/go/v1";
+
 import "validate/validate.proto";
 
 // TransactionLogEvent represents a single log entry from a blockchain transaction.
